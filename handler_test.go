@@ -30,8 +30,8 @@ func TestSearchHandler_BangSearch_Redirect(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusPermanentRedirect {
-		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
+	if rec.Code != http.StatusFound {
+		t.Errorf("expected status %d, got %d", http.StatusFound, rec.Code)
 	}
 	location := rec.Header().Get("Location")
 	expected := "https://www.google.com/search?q=hello"
@@ -53,8 +53,8 @@ func TestSearchHandler_BangWithExclamation_Redirect(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusPermanentRedirect {
-		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
+	if rec.Code != http.StatusFound {
+		t.Errorf("expected status %d, got %d", http.StatusFound, rec.Code)
 	}
 	location := rec.Header().Get("Location")
 	expected := "https://www.google.com/search?q=hello"
@@ -76,8 +76,8 @@ func TestSearchHandler_NoBang_UsesDefault(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusPermanentRedirect {
-		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
+	if rec.Code != http.StatusFound {
+		t.Errorf("expected status %d, got %d", http.StatusFound, rec.Code)
 	}
 	location := rec.Header().Get("Location")
 	expected := "https://www.google.com/search?q=hello+world"
@@ -99,8 +99,8 @@ func TestSearchHandler_NonexistentBang_UsesDefault(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusPermanentRedirect {
-		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
+	if rec.Code != http.StatusFound {
+		t.Errorf("expected status %d, got %d", http.StatusFound, rec.Code)
 	}
 	location := rec.Header().Get("Location")
 	expected := "https://www.google.com/search?q=nonexistent+hello"
@@ -205,8 +205,8 @@ func TestSearchHandler_TriggerOnly_RedirectsToHome(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusPermanentRedirect {
-		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
+	if rec.Code != http.StatusFound {
+		t.Errorf("expected status %d, got %d", http.StatusFound, rec.Code)
 	}
 	location := rec.Header().Get("Location")
 	expected := "https://www.youtube.com"

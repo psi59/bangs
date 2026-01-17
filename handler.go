@@ -51,7 +51,7 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	redirectURL := bang.BuildURL(searchTerm)
 
-	http.Redirect(w, r, redirectURL, http.StatusPermanentRedirect)
+	http.Redirect(w, r, redirectURL, http.StatusFound)
 }
 
 func renderErrorPage(w http.ResponseWriter, code int, emoji, title, message string) {

@@ -18,6 +18,11 @@ bangs:
     name: GitHub
     url_template: "https://github.com/search?q={{{s}}}"
 
+  - trigger: ghe
+    name: GitHub
+    url_template: "https://github.com/search?q={{{s}}}"
+    home_url: "https://naver.com"
+
   - trigger: so
     name: Stack Overflow
     url_template: "https://stackoverflow.com/search?q={{{s}}}"
