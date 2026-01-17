@@ -1,0 +1,36 @@
+default_bang: g
+
+bangs:
+  - trigger: g
+    name: Google
+    url_template: "https://www.google.com/search?q={{{s}}}"
+    # home_url 생략 시 url_template에서 자동 추출 → https://www.google.com
+
+  - trigger: w
+    name: Wikipedia
+    url_template: "https://en.wikipedia.org/wiki/Special:Search?search={{{s}}}"
+
+  - trigger: yt
+    name: YouTube
+    url_template: "https://www.youtube.com/results?search_query={{{s}}}"
+
+  - trigger: gh
+    name: GitHub
+    url_template: "https://github.com/search?q={{{s}}}"
+
+  - trigger: so
+    name: Stack Overflow
+    url_template: "https://stackoverflow.com/search?q={{{s}}}"
+
+  - trigger: npm
+    name: npm
+    url_template: "https://www.npmjs.com/search?q={{{s}}}"
+
+  - trigger: mdn
+    name: MDN Web Docs
+    url_template: "https://developer.mozilla.org/en-US/search?q={{{s}}}"
+
+  - trigger: custom
+    name: Custom Site
+    url_template: "https://example.com/search?q={{{s}}}"
+    home_url: "https://example.com/home" # 명시적으로 다른 경로 지정 가능
