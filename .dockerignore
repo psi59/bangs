@@ -1,0 +1,34 @@
+# Binary
+bangs
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Config (user's actual config)
+bangs.yaml
+
+# Documentation
+README.md
+LICENSE
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Test files
+*_test.go
+
+# OS
+.DS_Store
+Thumbs.db
