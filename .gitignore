@@ -37,3 +37,6 @@ bangs.yaml
 # Temporary files
 tmp/
 temp/
+
+# Debug binaries
+__debug_bin*
