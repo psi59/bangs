@@ -51,7 +51,7 @@ bangs:
 	server := NewServer(configPath, logger)
 	handler := server.Handler()
 
-	req := httptest.NewRequest(http.MethodGet, "/search?q=!g+hello", nil)
+	req := httptest.NewRequest(http.MethodGet, "/search?q=g+hello", nil)
 	rec := httptest.NewRecorder()
 
 	handler.ServeHTTP(rec, req)

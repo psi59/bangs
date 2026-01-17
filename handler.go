@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 type SearchHandler struct {
@@ -37,17 +36,11 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	parsed := h.parser.Parse(query)
 
-	bang := h.repo.FindByTrigger(parsed.BangTrigger)
+	bang := h.repo.FindByTrigger(parsed.FirstWord)
+	searchTerm := parsed.SearchTerm
 	if bang == nil {
-		// Try to find bang without "!" prefix
-		firstWord, rest := splitFirstWord(query)
-		if possibleBang := h.repo.FindByTrigger(firstWord); possibleBang != nil {
-			bang = possibleBang
-			parsed.SearchTerm = rest
-		} else {
-			bang = h.repo.GetDefault()
-			parsed.SearchTerm = query
-		}
+		bang = h.repo.GetDefault()
+		searchTerm = query
 	}
 	if bang == nil {
 		renderErrorPage(w, http.StatusServiceUnavailable,
@@ -56,18 +49,9 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			"No default search engine configured. 😅<br>Please check 'default_bang' in your config file.")
 		return
 	}
-	redirectURL := bang.BuildURL(parsed.SearchTerm)
+	redirectURL := bang.BuildURL(searchTerm)
 
 	http.Redirect(w, r, redirectURL, http.StatusPermanentRedirect)
-}
-
-func splitFirstWord(s string) (first, rest string) {
-	s = strings.TrimSpace(s)
-	idx := strings.IndexAny(s, " \t")
-	if idx == -1 {
-		return s, ""
-	}
-	return s[:idx], strings.TrimSpace(s[idx+1:])
 }
 
 func renderErrorPage(w http.ResponseWriter, code int, emoji, title, message string) {

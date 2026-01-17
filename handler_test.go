@@ -25,6 +25,29 @@ func TestSearchHandler_BangSearch_Redirect(t *testing.T) {
 	parser := NewParser()
 	handler := NewSearchHandler(repo, parser)
 
+	req := httptest.NewRequest(http.MethodGet, "/search?q=g+hello", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusPermanentRedirect {
+		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
+	}
+	location := rec.Header().Get("Location")
+	expected := "https://www.google.com/search?q=hello"
+	if location != expected {
+		t.Errorf("expected Location '%s', got '%s'", expected, location)
+	}
+}
+
+func TestSearchHandler_BangWithExclamation_Redirect(t *testing.T) {
+	repo := NewRepository()
+	// Configure trigger with "!" prefix
+	bang := NewBang("!g", "Google", "https://www.google.com/search?q={{{s}}}", "")
+	repo.Add(bang)
+	parser := NewParser()
+	handler := NewSearchHandler(repo, parser)
+
 	req := httptest.NewRequest(http.MethodGet, "/search?q=!g+hello", nil)
 	rec := httptest.NewRecorder()
 
@@ -71,7 +94,7 @@ func TestSearchHandler_NonexistentBang_UsesDefault(t *testing.T) {
 	parser := NewParser()
 	handler := NewSearchHandler(repo, parser)
 
-	req := httptest.NewRequest(http.MethodGet, "/search?q=!nonexistent+hello", nil)
+	req := httptest.NewRequest(http.MethodGet, "/search?q=nonexistent+hello", nil)
 	rec := httptest.NewRecorder()
 
 	handler.ServeHTTP(rec, req)
@@ -80,7 +103,7 @@ func TestSearchHandler_NonexistentBang_UsesDefault(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
 	}
 	location := rec.Header().Get("Location")
-	expected := "https://www.google.com/search?q=%21nonexistent+hello"
+	expected := "https://www.google.com/search?q=nonexistent+hello"
 	if location != expected {
 		t.Errorf("expected Location '%s', got '%s'", expected, location)
 	}
@@ -169,55 +192,7 @@ func TestSearchHandler_NoDefaultBang_ServiceUnavailable(t *testing.T) {
 	}
 }
 
-func TestSearchHandler_BangWithoutExclamation(t *testing.T) {
-	repo := NewRepository()
-	bang := NewBang("g", "Google", "https://www.google.com/search?q={{{s}}}", "")
-	repo.Add(bang)
-	repo.SetDefault("g")
-	parser := NewParser()
-	handler := NewSearchHandler(repo, parser)
-
-	// "g hello" without "!" should work if "g" is a registered bang
-	req := httptest.NewRequest(http.MethodGet, "/search?q=g+hello", nil)
-	rec := httptest.NewRecorder()
-
-	handler.ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusPermanentRedirect {
-		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
-	}
-	location := rec.Header().Get("Location")
-	expected := "https://www.google.com/search?q=hello"
-	if location != expected {
-		t.Errorf("expected Location '%s', got '%s'", expected, location)
-	}
-}
-
-func TestSearchHandler_BangWithoutExclamation_NotRegistered(t *testing.T) {
-	repo := NewRepository()
-	bang := NewBang("g", "Google", "https://www.google.com/search?q={{{s}}}", "")
-	repo.Add(bang)
-	repo.SetDefault("g")
-	parser := NewParser()
-	handler := NewSearchHandler(repo, parser)
-
-	// "foo hello" - "foo" is not a registered bang, so search "foo hello"
-	req := httptest.NewRequest(http.MethodGet, "/search?q=foo+hello", nil)
-	rec := httptest.NewRecorder()
-
-	handler.ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusPermanentRedirect {
-		t.Errorf("expected status %d, got %d", http.StatusPermanentRedirect, rec.Code)
-	}
-	location := rec.Header().Get("Location")
-	expected := "https://www.google.com/search?q=foo+hello"
-	if location != expected {
-		t.Errorf("expected Location '%s', got '%s'", expected, location)
-	}
-}
-
-func TestSearchHandler_BangWithoutExclamation_OnlyTrigger(t *testing.T) {
+func TestSearchHandler_TriggerOnly_RedirectsToHome(t *testing.T) {
 	repo := NewRepository()
 	bang := NewBang("yt", "YouTube", "https://www.youtube.com/results?search_query={{{s}}}", "")
 	repo.Add(bang)
@@ -225,7 +200,6 @@ func TestSearchHandler_BangWithoutExclamation_OnlyTrigger(t *testing.T) {
 	parser := NewParser()
 	handler := NewSearchHandler(repo, parser)
 
-	// "yt" alone (without "!") should redirect to YouTube home
 	req := httptest.NewRequest(http.MethodGet, "/search?q=yt", nil)
 	rec := httptest.NewRecorder()
 

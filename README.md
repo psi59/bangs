@@ -6,9 +6,10 @@ DuckDuckGo Bangs 스타일의 검색 리다이렉트 서비스입니다. Chrome 
 
 ## 기능
 
-- **Bang 검색**: `!g hello` 또는 `g hello` → Google에서 "hello" 검색 (`!`는 선택사항)
+- **Bang 검색**: `g hello` → Google에서 "hello" 검색 (trigger가 설정에서 `g`로 지정된 경우)
 - **기본 검색 엔진**: bang 없이 검색하면 설정된 기본 엔진 사용
-- **홈페이지 이동**: `!yt` 또는 `yt` (검색어 없이) → YouTube 홈으로 이동
+- **홈페이지 이동**: `yt` (검색어 없이) → YouTube 홈으로 이동
+- **커스텀 트리거**: `!g`, `@g`, `#g` 등 원하는 형식으로 트리거 설정 가능
 - **Auto-reload**: 설정 파일 변경 시 서버 재시작 없이 자동 반영
 - **Panic Recovery**: 예상치 못한 오류 발생 시 서버 유지
 
@@ -70,7 +71,7 @@ BANGS_CONFIG_PATH=/path/to/bangs.yaml BANGS_PORT=3000 ./bangs
    - **키워드**: `b`
    - **URL**: `http://localhost:8080/search?q=%s`
 
-이제 주소창에서 `b !g hello`를 입력하면 Google에서 "hello"를 검색합니다.
+이제 주소창에서 `b g hello`를 입력하면 Google에서 "hello"를 검색합니다.
 
 ## 설정 파일 형식
 
@@ -78,10 +79,14 @@ BANGS_CONFIG_PATH=/path/to/bangs.yaml BANGS_PORT=3000 ./bangs
 default_bang: g  # 기본 검색 엔진 (bang 없이 검색할 때 사용)
 
 bangs:
-  - trigger: g                                            # !g로 트리거
+  - trigger: g                                            # g로 트리거
     name: Google                                          # 표시 이름
     url_template: "https://www.google.com/search?q={{{s}}}"  # 검색 URL
     # home_url: "https://www.google.com"                  # 생략 시 자동 추출
+
+  - trigger: "!yt"                                        # !yt로 트리거 (DuckDuckGo 스타일)
+    name: YouTube
+    url_template: "https://www.youtube.com/results?search_query={{{s}}}"
 
   - trigger: custom
     name: Custom Site
@@ -93,7 +98,7 @@ bangs:
 
 | 필드 | 설명 |
 |------|------|
-| `trigger` | Bang 트리거 (예: `g`, `yt`, `gh`) |
+| `trigger` | Bang 트리거. 원하는 형식으로 설정 가능 (예: `g`, `!g`, `@yt`, `#gh`) |
 | `name` | 검색 엔진 이름 |
 | `url_template` | 검색 URL 템플릿. `{{{s}}}`가 검색어로 대체됨 |
 | `home_url` | (선택) 검색어 없이 bang만 입력 시 이동할 URL. 생략 시 `url_template`에서 자동 추출 |
@@ -107,15 +112,21 @@ bangs:
 
 ## 사용 예시
 
+설정에 따라 트리거가 다르게 동작합니다.
+
+**설정 예시:**
+```yaml
+bangs:
+  - trigger: g      # "g"로 시작하는 검색
+  - trigger: "!yt"  # "!yt"로 시작하는 검색
+```
+
 | 입력 | 결과 |
 |------|------|
-| `!g hello world` | Google에서 "hello world" 검색 |
-| `g hello world` | Google에서 "hello world" 검색 (`!` 생략 가능) |
-| `!yt golang tutorial` | YouTube에서 "golang tutorial" 검색 |
-| `yt golang tutorial` | YouTube에서 "golang tutorial" 검색 (`!` 생략 가능) |
-| `!yt` | YouTube 홈페이지로 이동 |
-| `yt` | YouTube 홈페이지로 이동 (`!` 생략 가능) |
-| `hello world` | 기본 검색 엔진(g)에서 "hello world" 검색 |
+| `g hello world` | Google에서 "hello world" 검색 (trigger: `g`) |
+| `!yt golang tutorial` | YouTube에서 "golang tutorial" 검색 (trigger: `!yt`) |
+| `!yt` | YouTube 홈페이지로 이동 (trigger: `!yt`) |
+| `hello world` | 기본 검색 엔진에서 "hello world" 검색 |
 
 ## API
 

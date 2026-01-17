@@ -1,47 +1,39 @@
 package main
 
 import (
-	"regexp"
 	"strings"
 )
 
-type Parser struct {
-	bangRegex *regexp.Regexp
-}
+type Parser struct{}
 
 type ParsedQuery struct {
-	BangTrigger string
-	SearchTerm  string
+	FirstWord  string
+	SearchTerm string
 }
 
 func NewParser() *Parser {
-	return &Parser{
-		bangRegex: regexp.MustCompile(`^!(\w+)`),
-	}
+	return &Parser{}
 }
 
 func (p *Parser) Parse(query string) ParsedQuery {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return ParsedQuery{
-			BangTrigger: "",
-			SearchTerm:  "",
+			FirstWord:  "",
+			SearchTerm: "",
 		}
 	}
 
-	match := p.bangRegex.FindStringSubmatch(query)
-	if match == nil {
+	idx := strings.IndexAny(query, " \t")
+	if idx == -1 {
 		return ParsedQuery{
-			BangTrigger: "",
-			SearchTerm:  query,
+			FirstWord:  query,
+			SearchTerm: "",
 		}
 	}
-
-	bangTrigger := match[1]
-	searchTerm := strings.TrimSpace(query[len(match[0]):])
 
 	return ParsedQuery{
-		BangTrigger: bangTrigger,
-		SearchTerm:  searchTerm,
+		FirstWord:  query[:idx],
+		SearchTerm: strings.TrimSpace(query[idx+1:]),
 	}
 }
