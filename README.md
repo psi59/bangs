@@ -1,5 +1,7 @@
 # Bangs
 
+> **Note**: This code was 100% written by LLM (Claude)
+
 DuckDuckGo Bangs 스타일의 검색 리다이렉트 서비스입니다. Chrome 검색 엔진으로 등록하여 사용할 수 있습니다.
 
 ## 기능
