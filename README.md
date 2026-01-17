@@ -145,8 +145,14 @@ bangs:
 ## 개발
 
 ```bash
+# Git hooks 설정 (pre-commit 린트 체크)
+git config core.hooksPath .githooks
+
 # 테스트 실행
 go test ./...
+
+# 린트 실행
+golangci-lint run
 
 # 빌드
 go build .

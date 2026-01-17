@@ -1,0 +1,20 @@
+#!/bin/sh
+
+echo "Running pre-commit checks..."
+
+# Run golangci-lint
+echo "Running golangci-lint..."
+if ! golangci-lint run; then
+    echo "❌ Lint check failed. Please fix the issues before committing."
+    exit 1
+fi
+
+# Run tests
+echo "Running tests..."
+if ! go test ./... -short; then
+    echo "❌ Tests failed. Please fix the issues before committing."
+    exit 1
+fi
+
+echo "✅ All checks passed!"
+exit 0
