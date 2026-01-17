@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync/atomic"
 
 	"github.com/fsnotify/fsnotify"
@@ -45,6 +46,9 @@ func (s *Server) WatchConfig() error {
 		return fmt.Errorf("failed to create watcher: %w", err)
 	}
 
+	configDir := filepath.Dir(s.configPath)
+	configBase := filepath.Base(s.configPath)
+
 	go func() {
 		for {
 			select {
@@ -52,8 +56,13 @@ func (s *Server) WatchConfig() error {
 				if !ok {
 					return
 				}
-				if event.Has(fsnotify.Write) {
-					s.logger.Info().Str("path", s.configPath).Msg("config file changed, reloading")
+				// Check if the event is for our config file
+				if filepath.Base(event.Name) != configBase {
+					continue
+				}
+				// Handle Write, Create, and Rename events (atomic save creates new file)
+				if event.Has(fsnotify.Write) || event.Has(fsnotify.Create) {
+					s.logger.Info().Str("path", s.configPath).Str("event", event.Op.String()).Msg("config file changed, reloading")
 					s.loadConfig()
 				}
 			case err, ok := <-watcher.Errors:
@@ -65,9 +74,11 @@ func (s *Server) WatchConfig() error {
 		}
 	}()
 
-	if err := watcher.Add(s.configPath); err != nil {
-		return fmt.Errorf("failed to watch config file: %w", err)
+	// Watch the directory instead of the file for better compatibility with Docker bind mounts
+	if err := watcher.Add(configDir); err != nil {
+		return fmt.Errorf("failed to watch config directory: %w", err)
 	}
+	s.logger.Info().Str("dir", configDir).Msg("watching config directory")
 	return nil
 }
 
