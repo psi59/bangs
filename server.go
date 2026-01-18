@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,6 +11,9 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/rs/zerolog"
 )
+
+//go:embed favicon.png
+var faviconPNG []byte
 
 type Server struct {
 	repo       atomic.Pointer[Repository]
@@ -92,12 +96,10 @@ func (s *Server) Handler() http.Handler {
 	return RecoverMiddleware(LoggingMiddleware(s.logger)(handler))
 }
 
-const faviconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💣</text></svg>`
-
 func faviconHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "image/svg+xml")
+	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Cache-Control", "public, max-age=86400")
-	fmt.Fprint(w, faviconSVG)
+	_, _ = w.Write(faviconPNG)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, _ *http.Request) {
