@@ -39,8 +39,14 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	bang := h.repo.FindByTrigger(parsed.FirstWord)
 	searchTerm := parsed.SearchTerm
 	if bang == nil {
-		bang = h.repo.GetDefault()
-		searchTerm = query
+		converted := KoreanToQwerty(parsed.FirstWord)
+		if converted != parsed.FirstWord {
+			bang = h.repo.FindByTrigger(converted)
+		}
+		if bang == nil {
+			bang = h.repo.GetDefault()
+			searchTerm = query
+		}
 	}
 	if bang == nil {
 		renderErrorPage(w, http.StatusServiceUnavailable,
