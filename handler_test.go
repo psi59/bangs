@@ -192,6 +192,76 @@ func TestSearchHandler_NoDefaultBang_ServiceUnavailable(t *testing.T) {
 	}
 }
 
+func TestSearchHandler_KoreanTrigger_Redirect(t *testing.T) {
+	repo := NewRepository()
+	bang := NewBang("gh", "GitHub", "https://github.com/search?q={{{s}}}", "")
+	repo.Add(bang)
+	repo.SetDefault("gh")
+	parser := NewParser()
+	handler := NewSearchHandler(repo, parser)
+
+	req := httptest.NewRequest(http.MethodGet, "/search?q=%ED%98%B8", nil) // "호"
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusFound {
+		t.Errorf("expected status %d, got %d", http.StatusFound, rec.Code)
+	}
+	location := rec.Header().Get("Location")
+	expected := "https://github.com"
+	if location != expected {
+		t.Errorf("expected Location '%s', got '%s'", expected, location)
+	}
+}
+
+func TestSearchHandler_KoreanTrigger_WithSearchTerm(t *testing.T) {
+	repo := NewRepository()
+	bang := NewBang("gh", "GitHub", "https://github.com/search?q={{{s}}}", "")
+	repo.Add(bang)
+	repo.SetDefault("gh")
+	parser := NewParser()
+	handler := NewSearchHandler(repo, parser)
+
+	req := httptest.NewRequest(http.MethodGet, "/search?q=%ED%98%B8+hello", nil) // "호 hello"
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusFound {
+		t.Errorf("expected status %d, got %d", http.StatusFound, rec.Code)
+	}
+	location := rec.Header().Get("Location")
+	expected := "https://github.com/search?q=hello"
+	if location != expected {
+		t.Errorf("expected Location '%s', got '%s'", expected, location)
+	}
+}
+
+func TestSearchHandler_KoreanTrigger_NoMatch_UsesDefault(t *testing.T) {
+	repo := NewRepository()
+	bang := NewBang("g", "Google", "https://www.google.com/search?q={{{s}}}", "")
+	repo.Add(bang)
+	repo.SetDefault("g")
+	parser := NewParser()
+	handler := NewSearchHandler(repo, parser)
+
+	// "안녕" → "dkssud" (존재하지 않는 트리거)
+	req := httptest.NewRequest(http.MethodGet, "/search?q=%EC%95%88%EB%85%95+hello", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusFound {
+		t.Errorf("expected status %d, got %d", http.StatusFound, rec.Code)
+	}
+	location := rec.Header().Get("Location")
+	expected := "https://www.google.com/search?q=%EC%95%88%EB%85%95+hello"
+	if location != expected {
+		t.Errorf("expected Location '%s', got '%s'", expected, location)
+	}
+}
+
 func TestSearchHandler_TriggerOnly_RedirectsToHome(t *testing.T) {
 	repo := NewRepository()
 	bang := NewBang("yt", "YouTube", "https://www.youtube.com/results?search_query={{{s}}}", "")
