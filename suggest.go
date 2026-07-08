@@ -9,8 +9,9 @@ import (
 
 const suggestMaxBodySize = 1 << 20 // 1MB
 
-// Wikimedia 등은 기본 Go-http-client UA를 로봇 정책 위반으로 거부한다
-const suggestUserAgent = "bangs/1.0 (+https://github.com/psi59/bangs)"
+// Wikimedia 등은 기본 Go-http-client UA를 로봇 정책 위반으로 거부한다.
+// 실사용자의 Firefox 입력을 대리하는 요청이므로 최신 Firefox UA를 사용
+const suggestUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0"
 
 type SuggestHandler struct {
 	repo   *Repository

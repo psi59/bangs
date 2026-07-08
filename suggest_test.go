@@ -179,7 +179,7 @@ func TestSuggestHandler_TriggerOnly_NoUpstreamCall(t *testing.T) {
 	assertSuggestResponse(t, rec.Body.Bytes(), "g", []string{})
 }
 
-func TestSuggestHandler_SendsDescriptiveUserAgent(t *testing.T) {
+func TestSuggestHandler_SendsFirefoxUserAgent(t *testing.T) {
 	// Wikimedia 등은 Go 기본 UA(Go-http-client)를 로봇 정책 위반으로 거부한다
 	var gotUA string
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -199,8 +199,8 @@ func TestSuggestHandler_SendsDescriptiveUserAgent(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if !strings.HasPrefix(gotUA, "bangs/") {
-		t.Errorf("expected User-Agent starting with 'bangs/', got '%s'", gotUA)
+	if !strings.HasPrefix(gotUA, "Mozilla/5.0") || !strings.Contains(gotUA, "Firefox/") {
+		t.Errorf("expected Firefox User-Agent, got '%s'", gotUA)
 	}
 }
 
