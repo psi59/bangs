@@ -80,7 +80,7 @@ docker run -d -p 8080:8080 \
 | `name` | Search engine name | Yes |
 | `url_template` | Search URL. `{{{s}}}` is replaced with query | Yes |
 | `home_url` | URL when no query. Auto-extracted if omitted | No |
-| `suggest_url_template` | Autocomplete API URL ([OpenSearch suggestions](https://developer.mozilla.org/en-US/docs/Web/XML/Guides/OpenSearch) format). Enables live suggestions | No |
+| `suggest_url_template` | Autocomplete API URL ([OpenSearch suggestions](https://developer.mozilla.org/en-US/docs/Web/XML/Guides/OpenSearch) or Naver `ac.search.naver.com` format). Enables live suggestions | No |
 
 ## Environment Variables
 

@@ -75,15 +75,39 @@ func (h *SuggestHandler) fetchUpstream(r *http.Request, suggestURL string) []str
 }
 
 // parseSuggestions extracts the completion list from an OpenSearch
-// suggestions response: [query, [completions], ...trailing elements].
+// suggestions response ([query, [completions], ...]) or, failing that,
+// a Naver autocomplete response ({"items": [[["completion"], ...]]}).
 func parseSuggestions(body []byte) []string {
 	var elements []json.RawMessage
-	if err := json.Unmarshal(body, &elements); err != nil || len(elements) < 2 {
+	if err := json.Unmarshal(body, &elements); err != nil {
+		return parseNaverSuggestions(body)
+	}
+	if len(elements) < 2 {
 		return nil
 	}
 	var suggestions []string
 	if err := json.Unmarshal(elements[1], &suggestions); err != nil {
 		return nil
+	}
+	return suggestions
+}
+
+func parseNaverSuggestions(body []byte) []string {
+	var resp struct {
+		Items []json.RawMessage `json:"items"`
+	}
+	if err := json.Unmarshal(body, &resp); err != nil || len(resp.Items) == 0 {
+		return nil
+	}
+	var entries [][]string
+	if err := json.Unmarshal(resp.Items[0], &entries); err != nil {
+		return nil
+	}
+	var suggestions []string
+	for _, entry := range entries {
+		if len(entry) > 0 && entry[0] != "" {
+			suggestions = append(suggestions, entry[0])
+		}
 	}
 	return suggestions
 }

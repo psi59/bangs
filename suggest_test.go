@@ -179,6 +179,26 @@ func TestSuggestHandler_TriggerOnly_NoUpstreamCall(t *testing.T) {
 	assertSuggestResponse(t, rec.Body.Bytes(), "g", []string{})
 }
 
+func TestSuggestHandler_NaverFormat_ParsesItems(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"query":["춘천"],"answer":[],"intend":[],"items":[[["춘천 날씨"],["춘천 맛집"]]]}`))
+	}))
+	t.Cleanup(upstream.Close)
+
+	repo := NewRepository()
+	bang := NewBang("n", "Naver", "https://search.naver.com/search.naver?query={{{s}}}", "")
+	bang.SuggestURLTemplate = upstream.URL + "/nx/ac?q={{{s}}}"
+	repo.Add(bang)
+	handler := NewSuggestHandler(repo, NewParser())
+
+	req := httptest.NewRequest(http.MethodGet, "/suggest?q=n+%EC%B6%98%EC%B2%9C", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	assertSuggestResponse(t, rec.Body.Bytes(), "n 춘천", []string{"n 춘천 날씨", "n 춘천 맛집"})
+}
+
 func TestSuggestHandler_SendsFirefoxUserAgent(t *testing.T) {
 	// Wikimedia 등은 Go 기본 UA(Go-http-client)를 로봇 정책 위반으로 거부한다
 	var gotUA string
