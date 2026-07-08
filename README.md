@@ -10,6 +10,7 @@ DuckDuckGo Bangs-style search redirect service.
 - **Default engine**: Search without bang uses your default engine
 - **Homepage**: `yt` (no query) → YouTube home
 - **Custom triggers**: `!g`, `@g`, `#g` - any format you want
+- **Search suggestions**: live autocomplete from the target engine as you type (Firefox)
 - **Auto-reload**: Config changes apply without restart
 
 ## Quick Start
@@ -23,10 +24,12 @@ bangs:
   - trigger: g
     name: Google
     url_template: "https://www.google.com/search?q={{{s}}}"
+    suggest_url_template: "https://suggestqueries.google.com/complete/search?client=firefox&q={{{s}}}"
 
   - trigger: yt
     name: YouTube
     url_template: "https://www.youtube.com/results?search_query={{{s}}}"
+    suggest_url_template: "https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q={{{s}}}"
 
   - trigger: gh
     name: GitHub
@@ -41,9 +44,20 @@ docker run -d -p 8080:8080 \
   ghcr.io/psi59/bangs:latest
 ```
 
-### 3. Register in Chrome
+### 3. Register in your browser
 
-#### As Custom Search Engine
+#### Firefox
+
+1. Open `http://localhost:8080/` in Firefox
+2. Right-click the address bar → **Add "Bangs"**
+   (or Settings → Search → Search Shortcuts, the page offers the engine automatically)
+3. Set Bangs as your default search engine
+4. Type `g hello` in the address bar — suggestions from the target engine
+   appear as you type (for bangs with `suggest_url_template`)
+
+#### Chrome
+
+##### As Custom Search Engine
 
 1. Settings → Search engine → Manage search engines → Add
 2. Configure:
@@ -52,7 +66,7 @@ docker run -d -p 8080:8080 \
    - **URL**: `http://localhost:8080/search?q=%s`
 3. Type `b g hello` in address bar → Google search for "hello"
 
-#### As Default Search Engine
+##### As Default Search Engine
 
 1. After adding as custom search engine
 2. Find "Bangs" in the list, click ⋮ → **Make default**
@@ -66,6 +80,7 @@ docker run -d -p 8080:8080 \
 | `name` | Search engine name | Yes |
 | `url_template` | Search URL. `{{{s}}}` is replaced with query | Yes |
 | `home_url` | URL when no query. Auto-extracted if omitted | No |
+| `suggest_url_template` | Autocomplete API URL ([OpenSearch suggestions](https://developer.mozilla.org/en-US/docs/Web/XML/Guides/OpenSearch) format). Enables live suggestions | No |
 
 ## Environment Variables
 

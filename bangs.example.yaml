@@ -5,14 +5,18 @@ bangs:
     name: Google
     url_template: "https://www.google.com/search?q={{{s}}}"
     # home_url 생략 시 url_template에서 자동 추출 → https://www.google.com
+    # suggest_url_template 설정 시 주소창 입력 중 자동완성 제안 제공 (Firefox 등)
+    suggest_url_template: "https://suggestqueries.google.com/complete/search?client=firefox&q={{{s}}}"
 
   - trigger: w
     name: Wikipedia
     url_template: "https://en.wikipedia.org/wiki/Special:Search?search={{{s}}}"
+    suggest_url_template: "https://en.wikipedia.org/w/api.php?action=opensearch&search={{{s}}}"
 
   - trigger: yt
     name: YouTube
     url_template: "https://www.youtube.com/results?search_query={{{s}}}"
+    suggest_url_template: "https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q={{{s}}}"
 
   - trigger: gh
     name: GitHub
