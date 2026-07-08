@@ -36,18 +36,7 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	parsed := h.parser.Parse(query)
 
-	bang := h.repo.FindByTrigger(parsed.FirstWord)
-	searchTerm := parsed.SearchTerm
-	if bang == nil {
-		converted := KoreanToQwerty(parsed.FirstWord)
-		if converted != parsed.FirstWord {
-			bang = h.repo.FindByTrigger(converted)
-		}
-		if bang == nil {
-			bang = h.repo.GetDefault()
-			searchTerm = query
-		}
-	}
+	bang, searchTerm, _ := resolveBang(h.repo, query, parsed)
 	if bang == nil {
 		renderErrorPage(w, http.StatusServiceUnavailable,
 			"⚙️",
@@ -58,6 +47,23 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	redirectURL := bang.BuildURL(searchTerm)
 
 	http.Redirect(w, r, redirectURL, http.StatusFound)
+}
+
+// resolveBang finds the bang for a parsed query: trigger lookup first,
+// then Korean-to-QWERTY conversion, then the default bang with the full
+// query as search term. viaTrigger reports whether the first word matched.
+func resolveBang(repo *Repository, query string, parsed ParsedQuery) (bang *Bang, searchTerm string, viaTrigger bool) {
+	bang = repo.FindByTrigger(parsed.FirstWord)
+	if bang == nil {
+		converted := KoreanToQwerty(parsed.FirstWord)
+		if converted != parsed.FirstWord {
+			bang = repo.FindByTrigger(converted)
+		}
+	}
+	if bang == nil {
+		return repo.GetDefault(), query, false
+	}
+	return bang, parsed.SearchTerm, true
 }
 
 func renderErrorPage(w http.ResponseWriter, code int, emoji, title, message string) {
