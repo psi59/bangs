@@ -90,6 +90,7 @@ func (s *Server) Handler() http.Handler {
 	searchHandler := &dynamicSearchHandler{server: s}
 	handler := http.NewServeMux()
 	handler.Handle("/search", searchHandler)
+	handler.Handle("/suggest", &dynamicSuggestHandler{server: s})
 	handler.HandleFunc("/health", s.healthHandler)
 	handler.HandleFunc("/favicon.ico", faviconHandler)
 
@@ -120,6 +121,16 @@ func (h *dynamicSearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	repo := h.server.repo.Load()
 	searchHandler := NewSearchHandler(repo, h.server.parser)
 	searchHandler.ServeHTTP(w, r)
+}
+
+type dynamicSuggestHandler struct {
+	server *Server
+}
+
+func (h *dynamicSuggestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	repo := h.server.repo.Load()
+	suggestHandler := NewSuggestHandler(repo, h.server.parser)
+	suggestHandler.ServeHTTP(w, r)
 }
 
 func GetEnv(key, defaultValue string) string {
