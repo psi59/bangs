@@ -51,6 +51,44 @@ bangs:
 	}
 }
 
+func TestLoadConfigFromYAML_SuggestURLTemplate(t *testing.T) {
+	yaml := `
+default_bang: g
+bangs:
+  - trigger: g
+    name: Google
+    url_template: "https://www.google.com/search?q={{{s}}}"
+    suggest_url_template: "https://suggestqueries.google.com/complete/search?client=firefox&q={{{s}}}"
+`
+	config, err := LoadConfigFromYAML([]byte(yaml))
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	repo := config.ToRepository()
+	bang := repo.FindByTrigger("g")
+	expected := "https://suggestqueries.google.com/complete/search?client=firefox&q={{{s}}}"
+	if bang.SuggestURLTemplate != expected {
+		t.Errorf("expected SuggestURLTemplate '%s', got '%s'", expected, bang.SuggestURLTemplate)
+	}
+}
+
+func TestLoadConfigFromYAML_InvalidSuggestURLTemplate(t *testing.T) {
+	yaml := `
+default_bang: g
+bangs:
+  - trigger: g
+    name: Google
+    url_template: "https://www.google.com/search?q={{{s}}}"
+    suggest_url_template: "not-a-url"
+`
+	_, err := LoadConfigFromYAML([]byte(yaml))
+
+	if err == nil {
+		t.Error("expected error for invalid suggest_url_template, got nil")
+	}
+}
+
 func TestLoadConfigFromYAML_InvalidYAML(t *testing.T) {
 	yaml := `invalid: yaml: : format`
 

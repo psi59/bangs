@@ -10,10 +10,11 @@ import (
 )
 
 type BangConfig struct {
-	Trigger     string `yaml:"trigger"`
-	Name        string `yaml:"name"`
-	URLTemplate string `yaml:"url_template"`
-	HomeURL     string `yaml:"home_url"`
+	Trigger            string `yaml:"trigger"`
+	Name               string `yaml:"name"`
+	URLTemplate        string `yaml:"url_template"`
+	HomeURL            string `yaml:"home_url"`
+	SuggestURLTemplate string `yaml:"suggest_url_template"`
 }
 
 type Config struct {
@@ -47,6 +48,15 @@ func (c *Config) Validate() error {
 		if parsed.Scheme == "" || parsed.Host == "" {
 			return fmt.Errorf("bang[%s]: url_template must be a valid URL with scheme and host", bang.Trigger)
 		}
+		if bang.SuggestURLTemplate != "" {
+			suggestParsed, err := url.Parse(bang.SuggestURLTemplate)
+			if err != nil {
+				return fmt.Errorf("bang[%s]: invalid suggest_url_template: %w", bang.Trigger, err)
+			}
+			if suggestParsed.Scheme == "" || suggestParsed.Host == "" {
+				return fmt.Errorf("bang[%s]: suggest_url_template must be a valid URL with scheme and host", bang.Trigger)
+			}
+		}
 	}
 	return nil
 }
@@ -63,6 +73,7 @@ func (c *Config) ToRepository() *Repository {
 	repo := NewRepository()
 	for _, bc := range c.Bangs {
 		bang := NewBang(bc.Trigger, bc.Name, bc.URLTemplate, bc.HomeURL)
+		bang.SuggestURLTemplate = bc.SuggestURLTemplate
 		repo.Add(bang)
 	}
 	repo.SetDefault(c.DefaultBang)

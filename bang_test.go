@@ -63,6 +63,28 @@ func TestBang_BuildURL_EmptyQuery_ReturnsHomeURL(t *testing.T) {
 	}
 }
 
+func TestBang_BuildSuggestURL_WithTemplate(t *testing.T) {
+	bang := NewBang("g", "Google", "https://www.google.com/search?q={{{s}}}", "")
+	bang.SuggestURLTemplate = "https://suggestqueries.google.com/complete/search?client=firefox&q={{{s}}}"
+
+	url := bang.BuildSuggestURL("hello world")
+
+	expected := "https://suggestqueries.google.com/complete/search?client=firefox&q=hello+world"
+	if url != expected {
+		t.Errorf("expected '%s', got '%s'", expected, url)
+	}
+}
+
+func TestBang_BuildSuggestURL_NoTemplate_ReturnsEmpty(t *testing.T) {
+	bang := NewBang("g", "Google", "https://www.google.com/search?q={{{s}}}", "")
+
+	url := bang.BuildSuggestURL("hello")
+
+	if url != "" {
+		t.Errorf("expected empty string, got '%s'", url)
+	}
+}
+
 func TestBang_GetHomeURL_WhenSet(t *testing.T) {
 	bang := NewBang("yt", "YouTube", "https://www.youtube.com/results?search_query={{{s}}}", "https://www.youtube.com")
 

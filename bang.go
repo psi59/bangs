@@ -6,10 +6,11 @@ import (
 )
 
 type Bang struct {
-	Trigger     string
-	Name        string
-	URLTemplate string
-	HomeURL     string
+	Trigger            string
+	Name               string
+	URLTemplate        string
+	HomeURL            string
+	SuggestURLTemplate string
 }
 
 func NewBang(trigger, name, urlTemplate, homeURL string) *Bang {
@@ -27,6 +28,14 @@ func (b *Bang) BuildURL(query string) string {
 	}
 	encoded := url.QueryEscape(query)
 	return strings.Replace(b.URLTemplate, "{{{s}}}", encoded, 1)
+}
+
+func (b *Bang) BuildSuggestURL(query string) string {
+	if b.SuggestURLTemplate == "" {
+		return ""
+	}
+	encoded := url.QueryEscape(query)
+	return strings.Replace(b.SuggestURLTemplate, "{{{s}}}", encoded, 1)
 }
 
 func (b *Bang) GetHomeURL() string {
