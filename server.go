@@ -93,6 +93,8 @@ func (s *Server) Handler() http.Handler {
 	handler.Handle("/suggest", &dynamicSuggestHandler{server: s})
 	handler.HandleFunc("/health", s.healthHandler)
 	handler.HandleFunc("/favicon.ico", faviconHandler)
+	handler.HandleFunc("/opensearch.xml", openSearchHandler)
+	handler.HandleFunc("/{$}", rootHandler)
 
 	return RecoverMiddleware(LoggingMiddleware(s.logger)(handler))
 }
