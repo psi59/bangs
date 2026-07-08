@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/rs/zerolog"
@@ -176,6 +177,31 @@ func TestSuggestHandler_TriggerOnly_NoUpstreamCall(t *testing.T) {
 		t.Error("expected no upstream call for trigger-only query")
 	}
 	assertSuggestResponse(t, rec.Body.Bytes(), "g", []string{})
+}
+
+func TestSuggestHandler_SendsDescriptiveUserAgent(t *testing.T) {
+	// Wikimedia 등은 Go 기본 UA(Go-http-client)를 로봇 정책 위반으로 거부한다
+	var gotUA string
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.Header.Get("User-Agent")
+		_, _ = w.Write([]byte(`["hello",["hello world"]]`))
+	}))
+	t.Cleanup(upstream.Close)
+
+	repo := NewRepository()
+	bang := NewBang("g", "Google", "https://www.google.com/search?q={{{s}}}", "")
+	bang.SuggestURLTemplate = upstream.URL + "/complete?q={{{s}}}"
+	repo.Add(bang)
+	handler := NewSuggestHandler(repo, NewParser())
+
+	req := httptest.NewRequest(http.MethodGet, "/suggest?q=g+hello", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if !strings.HasPrefix(gotUA, "bangs/") {
+		t.Errorf("expected User-Agent starting with 'bangs/', got '%s'", gotUA)
+	}
 }
 
 func TestSuggestHandler_KoreanTrigger_PrefixesAsTyped(t *testing.T) {

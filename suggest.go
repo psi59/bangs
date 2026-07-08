@@ -9,6 +9,9 @@ import (
 
 const suggestMaxBodySize = 1 << 20 // 1MB
 
+// Wikimedia 등은 기본 Go-http-client UA를 로봇 정책 위반으로 거부한다
+const suggestUserAgent = "bangs/1.0 (+https://github.com/psi59/bangs)"
+
 type SuggestHandler struct {
 	repo   *Repository
 	parser *Parser
@@ -54,6 +57,7 @@ func (h *SuggestHandler) fetchUpstream(r *http.Request, suggestURL string) []str
 	if err != nil {
 		return nil
 	}
+	req.Header.Set("User-Agent", suggestUserAgent)
 	resp, err := h.client.Do(req)
 	if err != nil {
 		return nil
