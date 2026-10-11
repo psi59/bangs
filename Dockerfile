@@ -1,26 +1,21 @@
 # Build stage
-FROM golang:alpine AS builder
+FROM rust:1-alpine AS builder
 
 WORKDIR /app
 
-# Install ca-certificates for HTTPS requests
-RUN apk add --no-cache ca-certificates
+# musl-dev: C toolchain support for ring and mimalloc
+RUN apk add --no-cache musl-dev
 
-# Copy go mod files
-COPY go.mod go.sum ./
-RUN go mod download
+# Build dependencies first so they are cached across source changes
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && echo 'fn main() {}' > src/main.rs && \
+    cargo build --release --locked && \
+    rm -rf src
 
-# Copy source code
-COPY . .
-
-# Build with optimizations
-# -trimpath: remove file system paths from binary
-# -ldflags="-s -w": strip debug info and symbol table
-# CGO_ENABLED=0: static binary
-RUN CGO_ENABLED=0 GOOS=linux go build \
-    -trimpath \
-    -ldflags="-s -w" \
-    -o bangs .
+# Copy source code and build a static release binary
+COPY favicon.png ./
+COPY src ./src
+RUN touch src/main.rs && cargo build --release --locked
 
 # Runtime stage
 FROM alpine:3.20
@@ -34,10 +29,10 @@ RUN apk add --no-cache ca-certificates tzdata
 RUN adduser -D -g '' appuser
 
 # Copy binary from builder
-COPY --from=builder /app/bangs .
+COPY --from=builder /app/target/release/bangs .
 
 # Copy example config (user should mount their own config)
-COPY --from=builder /app/bangs.example.yaml ./bangs.example.yaml
+COPY bangs.example.yaml ./bangs.example.yaml
 
 # Change ownership
 RUN chown -R appuser:appuser /app

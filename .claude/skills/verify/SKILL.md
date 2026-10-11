@@ -10,8 +10,8 @@ description: bangs 서버를 빌드·실행해 /search, /suggest, /opensearch.xm
 ## 빌드·실행
 
 ```bash
-go build -o /tmp/bangs-verify .
-BANGS_CONFIG_PATH=<설정파일> BANGS_PORT=18081 /tmp/bangs-verify &
+cargo build --release
+BANGS_CONFIG_PATH=<설정파일> BANGS_PORT=18081 ./target/release/bangs &
 curl -s http://localhost:18081/health   # {"status":"ok"}
 ```
 
@@ -49,6 +49,6 @@ curl -s http://localhost:18081/ | grep 'rel="search"'       # discovery link
 
 ## 주의
 
-- pre-commit 훅의 golangci-lint는 PATH 순서 문제로 v1이 잡힘 →
-  `PATH=/Users/psi59/.local/share/mise/installs/golangci-lint/latest/golangci-lint-2.12.2-darwin-arm64:$PATH` 로 커밋
+- pre-commit 훅은 `cargo fmt --check`, `cargo clippy -D warnings`, `cargo test`를 돌린다
+- 로그는 tracing JSON 한 줄씩 stdout (`{"timestamp":..,"level":"INFO","message":"request",..}`)
 - 포트는 18081처럼 기본(8080)과 다르게 격리

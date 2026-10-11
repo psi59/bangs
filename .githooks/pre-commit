@@ -2,16 +2,23 @@
 
 echo "Running pre-commit checks..."
 
-# Run golangci-lint
-echo "Running golangci-lint..."
-if ! golangci-lint run; then
+# Check formatting
+echo "Running cargo fmt..."
+if ! cargo fmt --check; then
+    echo "❌ Format check failed. Run 'cargo fmt' before committing."
+    exit 1
+fi
+
+# Run clippy
+echo "Running cargo clippy..."
+if ! cargo clippy --all-targets --locked -- -D warnings; then
     echo "❌ Lint check failed. Please fix the issues before committing."
     exit 1
 fi
 
 # Run tests
 echo "Running tests..."
-if ! go test ./... -short; then
+if ! cargo test --locked; then
     echo "❌ Tests failed. Please fix the issues before committing."
     exit 1
 fi

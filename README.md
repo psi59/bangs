@@ -88,19 +88,51 @@ docker run -d -p 8080:8080 \
 |----------|-------------|---------|
 | `BANGS_CONFIG_PATH` | Config file path | `./bangs.yaml` |
 | `BANGS_PORT` | Server port | `8080` |
+| `BANGS_AUTH_KEYS` | Comma-separated access keys. Empty disables authentication | (empty) |
+
+## Authentication
+
+Set `BANGS_AUTH_KEYS` to require a `key` query parameter on `/`, `/search`,
+`/suggest` and `/opensearch.xml`. Requests without a valid key get a plain
+`404`. `/health` and `/favicon.ico` stay open for health checks.
+
+```bash
+docker run -d -p 8080:8080 \
+  -v $(pwd)/bangs.yaml:/app/bangs.yaml \
+  -e BANGS_AUTH_KEYS="$(openssl rand -hex 32)" \
+  ghcr.io/psi59/bangs:latest
+```
+
+Register the engine from `https://<host>/?key=<key>`: the page then serves an
+OpenSearch description whose search and suggestion URLs already carry the key,
+so Firefox sends it automatically. For Chrome, append the key to the search
+engine URL: `https://<host>/search?q=%s&key=<key>`.
+
+The key travels in the URL because browsers cannot add headers to address-bar
+searches, so it can end up in browser history and synced settings. Use a long
+random key, serve over HTTPS, and rotate by listing the new key next to the old
+one (`BANGS_AUTH_KEYS=new,old`) until every browser is re-registered. The
+server never logs query strings.
 
 ## Alternative Installation
 
 ```bash
-# Install with Go
-go install github.com/psi59/bangs@latest
+# Install with Cargo
+cargo install --git https://github.com/psi59/bangs
 
 # Or build from source
 git clone https://github.com/psi59/bangs.git
-cd bangs && go build .
+cd bangs && cargo build --release
 
 # Run
-BANGS_CONFIG_PATH=./bangs.yaml ./bangs
+BANGS_CONFIG_PATH=./bangs.yaml ./target/release/bangs
+```
+
+## Development
+
+```bash
+git config core.hooksPath .githooks   # fmt, clippy and tests before each commit
+cargo test
 ```
 
 ## License

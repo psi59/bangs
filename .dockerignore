@@ -1,9 +1,10 @@
-# Binary
-bangs
+# Build output
+target/
 
 # Git
 .git
 .gitignore
+.githooks/
 
 # IDE
 .idea/
@@ -21,13 +22,11 @@ LICENSE
 # CI/CD
 .github/
 .gitlab-ci.yml
+.claude/
 
 # Docker
 Dockerfile
 .dockerignore
-
-# Test files
-*_test.go
 
 # OS
 .DS_Store
