@@ -1,0 +1,30 @@
+[package]
+name = "bangs"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "DuckDuckGo Bangs-style search redirect service"
+repository = "https://github.com/psi59/bangs"
+
+[dependencies]
+arc-swap = "1.9"
+bytes = "1.12"
+futures-util = "0.3"
+http-body-util = "0.1"
+hyper = { version = "1.12", features = ["server", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+mimalloc = "0.1"
+notify = "8.2"
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "gzip", "http2", "system-proxy", "stream"] }
+rustls = { version = "0.23.45", default-features = false, features = ["ring", "std", "tls12"] }
+saphyr-parser = "0.1"
+socket2 = "0.6"
+tokio = { version = "1.53", features = ["rt-multi-thread", "net", "time", "signal", "macros"] }
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = ["json", "fmt"] }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = true
